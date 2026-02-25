@@ -1,0 +1,41 @@
+name: ta1
+description: "A new Flutter project."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  provider: ^6.1.5+1 
+  firebase_core: ^4.4.0 
+  firebase_auth: ^6.1.4 
+  permission_handler: ^11.3.1
+  pedometer: ^4.0.1 
+  shared_preferences: ^2.2.2
+  cupertino_icons: ^1.0.8
+  cloud_firestore: ^6.1.2
+  firebase_ui_auth: ^3.0.1
+  device_info_plus: ^12.3.0
+  intl: ^0.20.2 
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: "^0.13.1"
+
+# --- FIXED PATHS BELOW ---
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/fitness_icon.png" # Updated to match your file name
+  adaptive_icon_background: "#008080"
+  adaptive_icon_foreground: "assets/icon/fitness_icon.png" # Updated to match your file name
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icon/fitness_icon.png # Matches your chosen file
