@@ -27,11 +27,6 @@ This project moves beyond manual logging, offering a centralized, data-driven sy
 
 ---
 
-## 📸 Screenshots
-*(Add your screenshots to a `screenshots/` folder in your repository and uncomment the table below)*
-
----
-
 ## 🚀 Getting Started
 
 This project is a starting point for a Flutter application. To get a copy running on your local machine for development and testing, follow these steps:
