@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart'; 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'workout_provider.dart';
 import 'login_signup/login_screen.dart';
-import 'screens/dashboard_screen.dart'; // Ensure this points to your MainNavigator
+import 'screens/dashboard_screen.dart';
+
+// ==========================================
+// MAIN ENTRY POINT
+// ==========================================
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  // Initialize Firebase
   await Firebase.initializeApp(
     options: const FirebaseOptions(
       apiKey: "AIzaSyDKnJq13a5SwMP_sE7Is6MDXi8o5evBreY",
@@ -24,13 +30,16 @@ void main() async {
 
   runApp(
     ChangeNotifierProvider(
-      create: (context) => WorkoutProvider(), // Initialization handled safely inside the StreamBuilder now
+      create: (context) => WorkoutProvider(),
       child: const FitnessApp(),
     ),
   );
 }
 
-// --- CONVERTED TO STATEFUL WIDGET TO FIX THE GLITCH ---
+// ==========================================
+// ROOT APP WIDGET
+// ==========================================
+
 class FitnessApp extends StatefulWidget {
   const FitnessApp({super.key});
 
@@ -39,14 +48,11 @@ class FitnessApp extends StatefulWidget {
 }
 
 class _FitnessAppState extends State<FitnessApp> {
-  // We declare the stream variable here
   late final Stream<User?> _authStream;
 
   @override
   void initState() {
     super.initState();
-    // We cache the stream once. This prevents the StreamBuilder from resetting 
-    // every time WorkoutProvider calls notifyListeners().
     _authStream = FirebaseAuth.instance.authStateChanges();
   }
 
@@ -59,67 +65,109 @@ class _FitnessAppState extends State<FitnessApp> {
           debugShowCheckedModeBanner: false,
           
           themeMode: provider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-          
-          theme: ThemeData(
-            primarySwatch: Colors.teal,
-            brightness: Brightness.light,
-            scaffoldBackgroundColor: Colors.white,
-            appBarTheme: const AppBarTheme(
-              backgroundColor: Colors.teal,
-              foregroundColor: Colors.white,
-              elevation: 0,
-            ),
-            cardColor: Colors.white,
-            inputDecorationTheme: const InputDecorationTheme(
-              border: OutlineInputBorder(),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.teal, width: 2.0),
-              ),
-            ),
-          ),
-          
-          darkTheme: ThemeData(
-            primarySwatch: Colors.teal,
-            brightness: Brightness.dark,
-            scaffoldBackgroundColor: const Color(0xFF121212),
-            appBarTheme: const AppBarTheme(
-              backgroundColor: Color(0xFF1F1F1F),
-              foregroundColor: Colors.white,
-              elevation: 0,
-            ),
-            cardColor: const Color(0xFF1E1E1E),
-            dividerColor: Colors.white24,
-            inputDecorationTheme: const InputDecorationTheme(
-              border: OutlineInputBorder(),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.tealAccent, width: 2.0),
-              ),
-            ),
-          ),
+          theme: _buildLightTheme(),
+          darkTheme: _buildDarkTheme(),
           
           home: StreamBuilder<User?>(
-            stream: _authStream, // Uses the cached stream to ensure stability
+            stream: _authStream,
             builder: (context, snapshot) {
-              
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Scaffold(body: Center(child: CircularProgressIndicator(color: Colors.teal)));
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator(color: Colors.teal)),
+                );
               }
-              
+
               if (snapshot.hasData && snapshot.data!.emailVerified) {
-                // Safe data fetching trigger
-                if (!provider.isInitialized) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    context.read<WorkoutProvider>().initializeListener();
-                  });
-                }
-                return const MainNavigator(); 
+                _initializeUserData(provider);
+                return const MainNavigator();
               }
-              
+
               return const LoginScreen();
             },
-          ), 
+          ),
         );
       },
+    );
+  }
+
+  void _initializeUserData(WorkoutProvider provider) {
+    if (!provider.isInitialized) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        provider.initializeListener();
+      });
+    }
+  }
+
+  // ==========================================
+  // THEME DEFINITIONS
+  // ==========================================
+
+  ThemeData _buildLightTheme() {
+    final base = ThemeData.light();
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.teal,
+        brightness: Brightness.light,
+        surface: const Color(0xFFF8FAFA),
+      ),
+      scaffoldBackgroundColor: const Color(0xFFF8FAFA),
+      cardColor: Colors.white,
+      textTheme: GoogleFonts.poppinsTextTheme(base.textTheme),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.black87,
+        elevation: 0,
+        centerTitle: true,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.grey.shade50,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Colors.teal, width: 2.0),
+        ),
+      ),
+    );
+  }
+
+  ThemeData _buildDarkTheme() {
+    final base = ThemeData.dark();
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.tealAccent,
+        brightness: Brightness.dark,
+        surface: const Color(0xFF0F1111),
+      ),
+      scaffoldBackgroundColor: const Color(0xFF0F1111),
+      cardColor: const Color(0xFF1A1D1D),
+      dividerColor: Colors.white10,
+      textTheme: GoogleFonts.poppinsTextTheme(base.textTheme),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: const Color(0xFF232626),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Colors.tealAccent, width: 2.0),
+        ),
+      ),
     );
   }
 }
